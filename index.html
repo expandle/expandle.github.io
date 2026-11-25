@@ -1,9 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta property="og:site_name" content="Expandle">
+    
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expandle</title>
+
+<title>Expandle - Daily Word Puzzle Game</title>
+
+<meta name="description" content="Play Expandle, a free daily word puzzle game. Test your vocabulary by solving an expanding sequence of words. A new puzzle every day.">
+
+<meta property="og:title" content="Expandle - Daily Word Puzzle Game">
+<meta property="og:description" content="A new expanding word puzzle every day. How far can you get?">
+<meta property="og:url" content="https://expandle.github.io/">
+<meta property="og:type" content="website">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Expandle",
+  "alternateName": "Expandle Word Game",
+  "url": "https://expandle.github.io/"
+}
+</script>
+
 <link rel="icon" type="image/png" href="expandle-logo.png">
 
 <style>
@@ -18,6 +39,8 @@
     --grey: #45484f;
     --key-grey: #818384;
 }
+
+
 
 @font-face {
     font-family: "Clear Sans";
@@ -1068,6 +1091,7 @@ button {
 </style>
 </head>
 
+
 <body>
 
 <!-- TOP EXPANDLE LOGO -->
@@ -1144,7 +1168,12 @@ button {
     </div>
 </div>
 
+</div>
+
 <main>
+
+    
+
     <div id="message">Loading today's puzzle...</div>
     <div id="boards"></div>
 
