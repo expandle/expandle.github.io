@@ -1899,6 +1899,7 @@ document.addEventListener("keydown", function(event) {
 });
 
 
+
 /* SHARE SCORE */
 
 async function shareScore() {
@@ -1943,32 +1944,61 @@ async function shareScore() {
 
     const shareText =
         `EXPANDLE #${puzzleDateKey.replaceAll("/", "")}\n` +
-        `${totalAttempts}/6\n` +
-        sharedGrid;
+        `${totalAttempts}/6\n\n` +
+        sharedGrid +
+        "\nhttps://expandle.github.io/";
 
-    if (!navigator.share) {
-        message.textContent =
-            "Sharing is unavailable in this browser. Open Expandle using HTTPS to share.";
+    // Try the native Android/iOS sharing menu
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: "My Expandle Score",
+                text: shareText
+            });
 
-        return;
+            return;
+
+        } catch (error) {
+            if (error.name === "AbortError") {
+                return;
+            }
+
+            console.error("Native sharing failed:", error);
+        }
     }
 
+    // Fallback: copy the score to the clipboard
     try {
-        await navigator.share({
-            title: "My Expandle Score",
-            text: shareText
-        });
-
-    } catch (error) {
-        if (error.name === "AbortError") {
-            return;
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(shareText);
+        } else {
+            throw new Error("Clipboard API unavailable");
         }
 
-        console.error("Sharing failed:", error);
+        message.textContent = "Score copied! You can now paste and share it.";
 
-        message.textContent = "Unable to open the sharing menu.";
+    } catch (error) {
+        // Older browser fallback
+        const textArea = document.createElement("textarea");
+
+        textArea.value = shareText;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+
+        document.body.appendChild(textArea);
+
+        textArea.select();
+
+        const copied = document.execCommand("copy");
+
+        document.body.removeChild(textArea);
+
+        message.textContent = copied
+            ? "Score copied! You can now paste and share it."
+            : "Unable to share your score on this browser.";
     }
 }
+
 
 
 /* ADMIRE COMPLETED PUZZLE */
