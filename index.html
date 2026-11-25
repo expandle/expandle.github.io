@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expandle</title>
+<link rel="icon" type="image/png" href="expandle-logo.png">
+
+<style>
+:root {
+    --background: #202124;
+    --surface: #292b30;
+    --text: #f5f5f5;
+    --muted: #a5a8b0;
+    --border: #555961;
+    --green: #538d4e;
+    --yellow: #b59f3b;
+    --grey: #45484f;
+    --key-grey: #818384;
+}
+
+@font-face {
+    font-family: "Clear Sans";
+    src: local("Clear Sans");
+    font-weight: 400 800;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    background: var(--background);
+    color: var(--text);
+    font-family: "Clear Sans", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* TOP EXPANDLE LOGO */
+
+.mini-logo {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    z-index: 10;
+}
+
+.logo-tile {
+    width: 27px;
+    height: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--grey) 50%, var(--surface) 50%);
+    border: 1px solid var(--grey);
+    color: var(--text);
+    font-family: "Clear Sans", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.logo-tile.yellow {
+    background: var(--yellow);
+    border-color: var(--yellow);
+}
+
+.logo-tile.green {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.popup-logo {
+    position: static;
+    left: auto;
+    transform: none;
+    justify-content: center;
+    margin: 0 auto 18px;
+}
+
+/* MAIN LAYOUT */
+
+main {
+    width: 100%;
+    max-width: 650px;
+    padding: 75px 12px 30px;
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#message {
+    min-height: 24px;
+    margin-bottom: 20px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 14px;
+}
+
+/* GAME BOARD */
+
+#boards {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 auto 28px;
+}
+
+.guess-row {
+    display: flex;
+    gap: 7px;
+    margin: 0;
+}
+
+.guess-row:nth-child(1) {
+    margin-left: 112px;
+}
+
+.guess-row:nth-child(2),
+.guess-row:nth-child(3) {
+    margin-left: 56px;
+}
+
+.guess-row:nth-child(n+4) {
+    margin-left: 0;
+}
+
+/* LETTER TILES */
+
+.tile {
+    width: 49px;
+    height: 49px;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--text);
+    transform: perspective(600px) rotateX(0deg);
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+.tile.filled {
+    border-color: #858991;
+}
+
+.tile.green {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.tile.yellow {
+    background: var(--yellow);
+    border-color: var(--yellow);
+}
+
+.tile.grey {
+    background: var(--grey);
+    border-color: var(--grey);
+}
+
+.tile.future-grey {
+    background: linear-gradient(135deg, var(--grey) 50%, var(--surface) 50%);
+    border-color: var(--grey);
+}
+
+/* WORDLE FLIP ANIMATION */
+
+.tile.reveal {
+    animation: flipReveal 0.45s ease-in-out forwards;
+}
+
+@keyframes flipReveal {
+    0% {
+        transform: perspective(600px) rotateX(0deg);
+    }
+
+    50% {
+        transform: perspective(600px) rotateX(90deg);
+    }
+
+    100% {
+        transform: perspective(600px) rotateX(0deg);
+    }
+}
+
+/* INVALID WORD SHAKE ANIMATION */
+
+.guess-row.shake {
+    animation: shake 0.45s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-6px); }
+    30%, 60%, 90% { transform: translateX(6px); }
+}
+
+/* KEYBOARD */
+
+#keyboard {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.key {
+    flex: 1;
+    min-width: 0;
+    height: 53px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: var(--key-grey);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.key.wide {
+    flex: 1.5;
+    font-size: 11px;
+}
+
+.key.green {
+    background: var(--green);
+}
+
+.key.yellow {
+    background: var(--yellow);
+}
+
+.key.grey {
+    background: var(--grey);
+}
+
+.key.future-grey {
+    background: linear-gradient(135deg, var(--grey) 50%, var(--key-grey) 50%);
+}
+
+.key:active {
+    filter: brightness(1.2);
+}
+
+.key:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* END GAME DIALOGUE */
+
+#result {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    width: 100%;
+    max-width: none;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    margin: 0;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    border-radius: 0;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.result-content {
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    max-height: 90svh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 25px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+}
+
+#result h2 {
+    margin: 0 0 12px;
+    font-size: 25px;
+}
+
+#result p {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+#resultText {
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+#attemptCount {
+    margin: 15px 0;
+    color: white !important;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+/* RESULT GRID */
+
+#shareGrid {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    width: fit-content;
+    margin: 22px auto;
+}
+
+.share-row {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-start;
+    min-height: 30px;
+}
+
+.share-row.row-1 {
+    margin-left: 70px;
+}
+
+.share-row.row-2,
+.share-row.row-3 {
+    margin-left: 35px;
+}
+
+.share-row.row-4,
+.share-row.row-5,
+.share-row.row-6 {
+    margin-left: 0;
+}
+
+.share-tile {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--grey);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+.share-tile.green {
+    background: var(--green);
+}
+
+.share-tile.yellow {
+    background: var(--yellow);
+}
+
+.share-tile.grey {
+    background: var(--grey);
+}
+
+.share-tile.future-grey {
+    background: linear-gradient(135deg, var(--grey) 50%, var(--surface) 50%);
+    border: 1px solid var(--grey);
+}
+
+/* ANSWER WORD CHAIN */
+
+#resultChain {
+    margin-top: 12px;
+    padding: 14px;
+    background: #202124;
+    border-radius: 6px;
+    color: white !important;
+    font-weight: bold;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+/* RESULT DIALOGUE BUTTONS */
+
+#resultPuzzleTitle {
+    font-family: "Clear Sans", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.result-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+#result button {
+    flex: 1;
+    min-width: 0;
+    padding: 13px 8px;
+    border: none;
+    border-radius: 5px;
+    font-family: "Clear Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+#result button:hover {
+    filter: brightness(1.12);
+}
+
+#result button:active {
+    transform: scale(0.97);
+}
+
+#result .share-button {
+    background: var(--green);
+    color: white;
+}
+
+#result .admire-button {
+    background: #f5f5f5;
+    color: #202124;
+}
+
+@media (max-width: 380px) {
+    .result-buttons {
+        gap: 7px;
+    }
+
+    #result button {
+        font-size: 11px;
+        padding: 12px 5px;
+    }
+}
+
+/* HOW TO PLAY MODAL */
+
+#instructionsModal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    background: rgba(0, 0, 0, 0.8);
+    overflow-y: auto;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    max-height: 90svh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 28px 25px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content h2 {
+    margin: 0 0 18px;
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+.modal-content > p {
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* EXAMPLE TILES */
+
+.example-feedback {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0 22px;
+}
+
+.example-tile {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.example-tile.green {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.example-tile.yellow {
+    background: var(--yellow);
+    border-color: var(--yellow);
+}
+
+.example-tile.grey {
+    background: var(--grey);
+    border-color: var(--grey);
+}
+
+.example-tile.future-grey {
+    background: linear-gradient(135deg, var(--grey) 50%, var(--surface) 50%);
+    border-color: var(--grey);
+}
+
+/* FEEDBACK EXPLANATIONS */
+
+.feedback-explanations {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.feedback-key {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--muted);
+}
+
+.feedback-swatch {
+    flex-shrink: 0;
+    width: 17px;
+    height: 17px;
+    border-radius: 2px;
+}
+
+.feedback-swatch.green {
+    background: var(--green);
+}
+
+.feedback-swatch.yellow {
+    background: var(--yellow);
+}
+
+.feedback-swatch.grey {
+    background: var(--grey);
+}
+
+.feedback-swatch.future-grey {
+    background: linear-gradient(135deg, var(--grey) 50%, var(--surface) 50%);
+    border: 1px solid var(--grey);
+}
+
+#startGameButton {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 5px;
+    background: var(--green);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+#startGameButton:hover {
+    filter: brightness(1.15);
+}
+
+#startGameButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* MOBILE RESPONSIVENESS */
+
+@media (max-width: 500px) {
+
+    main {
+        padding-top: 70px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    #boards {
+        gap: 6px;
+        margin-bottom: 22px;
+        max-width: 100%;
+    }
+
+    .tile {
+        width: 39px;
+        height: 39px;
+        font-size: 19px;
+    }
+
+    .guess-row {
+        gap: 5px;
+    }
+
+    .guess-row:nth-child(1) {
+        margin-left: 88px;
+    }
+
+    .guess-row:nth-child(2),
+    .guess-row:nth-child(3) {
+        margin-left: 44px;
+    }
+
+    .guess-row:nth-child(n+4) {
+        margin-left: 0;
+    }
+
+    #keyboard {
+        width: 100%;
+        max-width: 500px;
+        gap: 7px;
+        margin-bottom: 15px;
+    }
+
+    .keyboard-row {
+        width: 100%;
+        gap: 4px;
+    }
+
+    .key {
+        height: 48px;
+        min-height: 44px;
+        font-size: clamp(11px, 3.5vw, 13px);
+        border-radius: 5px;
+    }
+
+    .key.wide {
+        font-size: 10px;
+    }
+
+    .mini-logo {
+        top: 12px;
+        gap: 2px;
+    }
+
+    .logo-tile {
+        width: 25px;
+        height: 25px;
+        font-size: 13px;
+    }
+
+    #instructionsModal {
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        overflow-y: auto;
+        align-items: center;
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 24px);
+        max-height: calc(100svh - 24px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 22px 18px;
+    }
+
+    .modal-content h2 {
+        font-size: 22px;
+    }
+
+    .modal-content > p {
+        font-size: 13px;
+    }
+
+    .example-tile {
+        width: 40px;
+        height: 40px;
+        font-size: 19px;
+    }
+
+    .example-feedback {
+        gap: 6px;
+    }
+
+    #result {
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .result-content {
+        max-height: calc(100vh - 24px);
+        max-height: calc(100svh - 24px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 16px;
+    }
+
+    .share-tile {
+        width: 27px;
+        height: 27px;
+        font-size: 13px;
+    }
+
+    .share-row {
+        gap: 4px;
+        min-height: 27px;
+    }
+
+    .share-row.row-1 {
+        margin-left: 62px;
+    }
+
+    .share-row.row-2,
+    .share-row.row-3 {
+        margin-left: 31px;
+    }
+
+    .share-row.row-4,
+    .share-row.row-5,
+    .share-row.row-6 {
+        margin-left: 0;
+    }
+
+    .result-buttons {
+        gap: 7px;
+    }
+
+    #result button {
+        font-size: 11px;
+        padding: 12px 5px;
+        min-height: 44px;
+    }
+}
+
+/* SMALL MOBILE SCREENS */
+
+@media (max-width: 360px) {
+
+    main {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .tile {
+        width: 34px;
+        height: 34px;
+        font-size: 17px;
+    }
+
+    .guess-row {
+        gap: 4px;
+    }
+
+    .guess-row:nth-child(1) {
+        margin-left: 76px;
+    }
+
+    .guess-row:nth-child(2),
+    .guess-row:nth-child(3) {
+        margin-left: 38px;
+    }
+
+    .guess-row:nth-child(n+4) {
+        margin-left: 0;
+    }
+
+    #keyboard {
+        gap: 6px;
+    }
+
+    .keyboard-row {
+        gap: 3px;
+    }
+
+    .key {
+        height: 44px;
+        font-size: 11px;
+    }
+
+    .key.wide {
+        font-size: 9px;
+    }
+
+    .logo-tile {
+        width: 23px;
+        height: 23px;
+        font-size: 12px;
+    }
+}
+
+/* SHORT MOBILE SCREENS */
+
+@media (max-height: 650px) and (max-width: 500px) {
+
+    main {
+        padding-top: 55px;
+        padding-bottom: 15px;
+    }
+
+    #message {
+        margin-bottom: 10px;
+    }
+
+    #boards {
+        gap: 4px;
+        margin-bottom: 14px;
+    }
+
+    .tile {
+        width: 34px;
+        height: 34px;
+        font-size: 17px;
+    }
+
+    .guess-row {
+        gap: 4px;
+    }
+
+    .guess-row:nth-child(1) {
+        margin-left: 76px;
+    }
+
+    .guess-row:nth-child(2),
+    .guess-row:nth-child(3) {
+        margin-left: 38px;
+    }
+
+    .guess-row:nth-child(n+4) {
+        margin-left: 0;
+    }
+
+    #keyboard {
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    .keyboard-row {
+        gap: 3px;
+    }
+
+    .key {
+        height: 40px;
+        min-height: 40px;
+    }
+}
+
+/* MOBILE FULL-SCREEN GAME LAYOUT */
+
+@media (max-width: 500px) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+    }
+
+    body {
+        height: 100svh;
+        min-height: 100svh;
+        overflow: hidden;
+    }
+
+    main {
+        flex: 1;
+        width: 100%;
+        height: 100svh;
+        min-height: 0;
+        padding: 55px 8px max(8px, env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #message {
+        flex-shrink: 0;
+        min-height: 24px;
+        width: 100%;
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* RESPONSIVE GRID SIZE */
+
+    #boards {
+        --tile-size: min(
+            58px,
+            calc((100svh - 260px) / 6),
+            calc((100vw - 42px) / 6)
+        );
+
+        flex: 1;
+        min-height: 0;
+        width: fit-content;
+        max-width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .tile {
+        width: var(--tile-size);
+        height: var(--tile-size);
+        font-size: calc(var(--tile-size) * 0.48);
+        flex-shrink: 0;
+    }
+
+    .guess-row {
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+    /* PRESERVE COLUMN ALIGNMENT */
+
+    .guess-row:nth-child(1) {
+        margin-left: calc((var(--tile-size) + 5px) * 2);
+    }
+
+    .guess-row:nth-child(2),
+    .guess-row:nth-child(3) {
+        margin-left: calc(var(--tile-size) + 5px);
+    }
+
+    .guess-row:nth-child(n+4) {
+        margin-left: 0;
+    }
+
+    /* KEYBOARD */
+
+    #keyboard {
+        flex-shrink: 0;
+        width: 100%;
+        max-width: 500px;
+        margin-top: 8px;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        gap: 7px;
+    }
+
+    .keyboard-row {
+        flex-shrink: 0;
+        gap: 4px;
+    }
+
+    .key {
+        height: 48px;
+        min-height: 44px;
+    }
+}
+
+/* EXTRA SMALL SCREENS */
+
+@media (max-width: 360px) {
+
+    #boards {
+        --tile-size: min(
+            48px,
+            calc((100svh - 260px) / 6),
+            calc((100vw - 42px) / 6)
+        );
+    }
+
+    .guess-row {
+        gap: 4px;
+    }
+
+    .key {
+        height: 44px;
+        min-height: 44px;
+    }
+}
+
+/* SHORT MOBILE SCREENS */
+
+@media (max-height: 650px) and (max-width: 500px) {
+
+    main {
+        padding-top: 50px;
+    }
+
+    #boards {
+        --tile-size: min(
+            48px,
+            calc((100svh - 230px) / 6),
+            calc((100vw - 42px) / 6)
+        );
+
+        gap: 4px;
+    }
+
+    .guess-row {
+        gap: 4px;
+    }
+
+    #keyboard {
+        gap: 5px;
+    }
+
+    .key {
+        height: 40px;
+        min-height: 40px;
+    }
+}
+
+/* TOUCH DEVICE IMPROVEMENTS */
+
+button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.key,
+#result button,
+#startGameButton {
+    user-select: none;
+    -webkit-user-select: none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP EXPANDLE LOGO -->
+
+<div class="mini-logo">
+    <div class="logo-tile green">E</div>
+    <div class="logo-tile">X</div>
+    <div class="logo-tile yellow">P</div>
+    <div class="logo-tile green">A</div>
+    <div class="logo-tile">N</div>
+    <div class="logo-tile yellow">D</div>
+    <div class="logo-tile">L</div>
+    <div class="logo-tile green">E</div>
+</div>
+
+<!-- HOW TO PLAY -->
+
+<div id="instructionsModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+
+        <div class="mini-logo popup-logo">
+            <div class="logo-tile green">E</div>
+            <div class="logo-tile">X</div>
+            <div class="logo-tile yellow">P</div>
+            <div class="logo-tile green">A</div>
+            <div class="logo-tile">N</div>
+            <div class="logo-tile yellow">D</div>
+            <div class="logo-tile">L</div>
+            <div class="logo-tile green">E</div>
+        </div>
+
+        <h2 id="modalTitle">HOW TO PLAY</h2>
+
+        <p>
+            Start with a 3-letter word and try to guess it.
+            Each incorrect guess makes the next word one letter longer.
+            Every new word contains all the letters from the previous word in any order,
+            plus one additional letter. You have three guesses for the final
+            expanded word.
+        </p>
+
+        <div class="example-feedback">
+            <div class="example-tile green">A</div>
+            <div class="example-tile yellow">R</div>
+            <div class="example-tile grey">T</div>
+            <div class="example-tile future-grey">D</div>
+        </div>
+
+        <div class="feedback-explanations">
+            <div class="feedback-key">
+                <div class="feedback-swatch green"></div>
+                <span><strong>GREEN</strong> – Correct letter and position in next word</span>
+            </div>
+
+            <div class="feedback-key">
+                <div class="feedback-swatch yellow"></div>
+                <span><strong>YELLOW</strong> – Letter appears in the next word</span>
+            </div>
+
+            <div class="feedback-key">
+                <div class="feedback-swatch grey"></div>
+                <span><strong>GREY</strong> – Letter does not appear in any remaining word</span>
+            </div>
+
+            <div class="feedback-key">
+                <div class="feedback-swatch future-grey"></div>
+                <span><strong>HALF-GREY</strong> – Letter appears in a later word, but not the next</span>
+            </div>
+        </div>
+
+        <button id="startGameButton" type="button" onclick="startGame()" disabled>
+            LOADING...
+        </button>
+    </div>
+</div>
+
+<main>
+    <div id="message">Loading today's puzzle...</div>
+    <div id="boards"></div>
+
+    <!-- KEYBOARD -->
+
+    <div id="keyboard">
+        <div class="keyboard-row">
+            <button class="key" data-key="Q">Q</button>
+            <button class="key" data-key="W">W</button>
+            <button class="key" data-key="E">E</button>
+            <button class="key" data-key="R">R</button>
+            <button class="key" data-key="T">T</button>
+            <button class="key" data-key="Y">Y</button>
+            <button class="key" data-key="U">U</button>
+            <button class="key" data-key="I">I</button>
+            <button class="key" data-key="O">O</button>
+            <button class="key" data-key="P">P</button>
+        </div>
+
+        <div class="keyboard-row">
+            <button class="key" data-key="A">A</button>
+            <button class="key" data-key="S">S</button>
+            <button class="key" data-key="D">D</button>
+            <button class="key" data-key="F">F</button>
+            <button class="key" data-key="G">G</button>
+            <button class="key" data-key="H">H</button>
+            <button class="key" data-key="J">J</button>
+            <button class="key" data-key="K">K</button>
+            <button class="key" data-key="L">L</button>
+        </div>
+
+        <div class="keyboard-row">
+            <button class="key wide" data-key="ENTER">ENTER</button>
+            <button class="key" data-key="Z">Z</button>
+            <button class="key" data-key="X">X</button>
+            <button class="key" data-key="C">C</button>
+            <button class="key" data-key="V">V</button>
+            <button class="key" data-key="B">B</button>
+            <button class="key" data-key="N">N</button>
+            <button class="key" data-key="M">M</button>
+            <button class="key wide" data-key="BACKSPACE">⌫</button>
+        </div>
+    </div>
+</main>
+
+<!-- END GAME DIALOGUE -->
+
+<div id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="result-content">
+        <h2 id="resultTitle"></h2>
+        <p id="resultText"></p>
+        <p id="attemptCount"></p>
+        <div id="shareGrid"></div>
+        <p id="resultPuzzleTitle">EXPANDLE</p>
+
+        <div class="result-buttons">
+            <button class="share-button" type="button" onclick="shareScore()">
+                SHARE SCORE
+            </button>
+
+            <button class="admire-button" type="button" onclick="admirePuzzle()">
+                ADMIRE PUZZLE
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+/* DAILY PUZZLE DATABASE */
+
+let answers = [];
+let puzzleDateKey = "";
+
+
+async function loadDailyPuzzle() {
+    try {
+        const response = await fetch("puzzles.json");
+
+        if (!response.ok) {
+            throw new Error("Unable to load puzzle database.");
+        }
+
+        const puzzles = await response.json();
+
+        const today = new Date();
+
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const year = today.getFullYear();
+
+        puzzleDateKey = `${day}/${month}/${year}`;
+
+        if (!puzzles[puzzleDateKey]) {
+            throw new Error(`No puzzle found for ${puzzleDateKey}`);
+        }
+
+        const dailyAnswers = puzzles[puzzleDateKey];
+        const requiredLengths = [3, 4, 5, 6];
+
+        if (
+            !Array.isArray(dailyAnswers) ||
+            dailyAnswers.length !== 4 ||
+            dailyAnswers.some((word, index) =>
+                typeof word !== "string" ||
+                word.length !== requiredLengths[index] ||
+                !/^[a-zA-Z]+$/.test(word)
+            )
+        ) {
+            throw new Error("Today's puzzle has an incorrect format.");
+        }
+
+        answers = dailyAnswers.map(word => word.toUpperCase());
+
+        const startButton = document.getElementById("startGameButton");
+
+        startButton.disabled = false;
+        startButton.textContent = "PLAY";
+
+        message.textContent = "Guess the 3-letter word.";
+
+        render();
+
+    } catch (error) {
+        console.error("Puzzle loading error:", error);
+
+        answers = [];
+
+        message.textContent = "Unable to load today's puzzle.";
+
+        const startButton = document.getElementById("startGameButton");
+
+        startButton.disabled = true;
+        startButton.textContent = "PUZZLE UNAVAILABLE";
+    }
+}
+
+
+/* GAME STATE */
+
+let stage = 0;
+let attempts = [[], [], [], []];
+let currentGuess = "";
+let finished = false;
+let gameStarted = false;
+let isRevealing = false;
+
+const keyboardColours = {};
+
+const boards = document.getElementById("boards");
+const message = document.getElementById("message");
+const keyboard = document.getElementById("keyboard");
+
+
+/* START GAME */
+
+function startGame() {
+    if (answers.length !== 4) {
+        message.textContent = "Today's puzzle is not available.";
+        return;
+    }
+
+    gameStarted = true;
+
+    document.getElementById("instructionsModal").style.display = "none";
+
+    message.textContent = "Guess the 3-letter word.";
+}
+
+
+/* COUNT LETTERS */
+
+function countLetters(word) {
+    const counts = {};
+
+    for (const letter of word) {
+        counts[letter] = (counts[letter] || 0) + 1;
+    }
+
+    return counts;
+}
+
+
+/* VALIDATE WORD USING ONLINE DICTIONARY */
+
+const wordValidityCache = {};
+
+async function isValidWord(word) {
+    const lowerWord = word.toLowerCase();
+
+    if (wordValidityCache[lowerWord] !== undefined) {
+        return wordValidityCache[lowerWord];
+    }
+
+    try {
+        const response = await fetch(
+            `https://api.dictionaryapi.dev/api/v2/entries/en/${lowerWord}`
+        );
+
+        const valid = response.ok;
+        wordValidityCache[lowerWord] = valid;
+
+        return valid;
+
+    } catch (error) {
+        return null;
+    }
+}
+
+
+/* WORDLE FEEDBACK */
+
+function getFeedback(guess, answer, currentStage) {
+    const result = Array(guess.length).fill("grey");
+    const remaining = countLetters(answer);
+
+    const columnOffset = [1, 0, 1, 0][currentStage];
+
+    for (let i = 0; i < guess.length; i++) {
+        const answerIndex = i + columnOffset;
+
+        if (
+            answerIndex < answer.length &&
+            guess[i] === answer[answerIndex]
+        ) {
+            result[i] = "green";
+            remaining[guess[i]]--;
+        }
+    }
+
+    for (let i = 0; i < guess.length; i++) {
+        if (result[i] === "green") continue;
+
+        if (remaining[guess[i]] > 0) {
+            result[i] = "yellow";
+            remaining[guess[i]]--;
+        }
+    }
+
+    return result;
+}
+
+
+/* HALF-GREY FEEDBACK */
+
+function getFutureFeedback(guess, feedback, currentStage) {
+    const futureFeedback = [];
+    const laterWords = answers.slice(currentStage + 2);
+
+    for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i];
+
+        if (feedback[i] !== "grey") {
+            futureFeedback.push(false);
+            continue;
+        }
+
+        const appearsInLaterWord = laterWords.some(word =>
+            word.includes(letter)
+        );
+
+        futureFeedback.push(appearsInLaterWord);
+    }
+
+    return futureFeedback;
+}
+
+
+/* GET TILE / KEYBOARD COLOUR */
+
+function getDisplayStatus(attempt, index) {
+    const status = attempt.feedback[index];
+
+    if (status !== "grey") return status;
+
+    if (attempt.future && attempt.future[index]) {
+        return "future-grey";
+    }
+
+    return "grey";
+}
+
+
+/* WORDLE FLIP ANIMATION */
+
+function animateRow(row) {
+    return new Promise(resolve => {
+        const tiles = row.querySelectorAll(".tile");
+
+        if (tiles.length === 0) {
+            resolve();
+            return;
+        }
+
+        const staggerDelay = 400;
+        const animationDuration = 800;
+
+        tiles.forEach((tile, index) => {
+            const colour = tile.dataset.colour;
+
+            tile.classList.remove(
+                "green",
+                "yellow",
+                "grey",
+                "future-grey"
+            );
+
+            tile.style.animationDelay = `${index * staggerDelay}ms`;
+            tile.classList.add("reveal");
+
+            setTimeout(() => {
+                tile.classList.add(colour);
+            }, index * staggerDelay + animationDuration / 3);
+
+            setTimeout(() => {
+                tile.classList.remove("reveal");
+                tile.style.animationDelay = "";
+            }, index * staggerDelay + animationDuration);
+        });
+
+        const totalDuration =
+            (tiles.length - 1) * staggerDelay + animationDuration;
+
+        setTimeout(resolve, totalDuration);
+    });
+}
+
+
+/* SHAKE INVALID GUESS */
+
+function shakeRow() {
+    const activeRow = stage < 3
+        ? stage
+        : 3 + attempts[3].length;
+
+    const row = boards.children[activeRow];
+
+    if (!row) return;
+
+    row.classList.remove("shake");
+
+    void row.offsetWidth;
+
+    row.classList.add("shake");
+
+    setTimeout(() => {
+        row.classList.remove("shake");
+    }, 450);
+}
+
+
+/* RENDER BOARD */
+
+function render(animatedRowIndex = -1) {
+    boards.innerHTML = "";
+
+    const rowLengths = [3, 4, 5, 6, 6, 6];
+
+    const rows = [
+        attempts[0][0],
+        attempts[1][0],
+        attempts[2][0],
+        attempts[3][0],
+        attempts[3][1],
+        attempts[3][2]
+    ];
+
+    const activeRow = stage < 3
+        ? stage
+        : 3 + attempts[3].length;
+
+    rowLengths.forEach((length, rowIndex) => {
+        const row = document.createElement("div");
+        row.className = "guess-row";
+
+        const savedAttempt = rows[rowIndex];
+        const isActive = !finished && rowIndex === activeRow;
+
+        const letters = savedAttempt
+            ? savedAttempt.word
+            : (isActive ? currentGuess : "");
+
+        for (let i = 0; i < length; i++) {
+            const tile = document.createElement("div");
+            tile.className = "tile";
+
+            if (letters[i]) {
+                tile.textContent = letters[i];
+                tile.classList.add("filled");
+            }
+
+            if (savedAttempt) {
+                const colour = getDisplayStatus(savedAttempt, i);
+
+                if (rowIndex === animatedRowIndex) {
+                    tile.dataset.colour = colour;
+                } else {
+                    tile.classList.add(colour);
+                }
+            }
+
+            row.appendChild(tile);
+        }
+
+        boards.appendChild(row);
+    });
+}
+
+
+/* UPDATE KEYBOARD */
+
+function updateKeyboard(guess, attempt) {
+    const colourPriority = {
+        grey: 0,
+        future: 1,
+        yellow: 2,
+        green: 3
+    };
+
+    const guessColours = {};
+
+    for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i];
+        const displayStatus = getDisplayStatus(attempt, i);
+
+        const colour = displayStatus === "future-grey"
+            ? "future"
+            : displayStatus;
+
+        const currentColour = guessColours[letter];
+
+        if (
+            !currentColour ||
+            colourPriority[colour] > colourPriority[currentColour]
+        ) {
+            guessColours[letter] = colour;
+        }
+    }
+
+    Object.assign(keyboardColours, guessColours);
+
+    renderKeyboardColours();
+}
+
+
+/* DISPLAY KEYBOARD COLOURS */
+
+function renderKeyboardColours() {
+    document.querySelectorAll(".key").forEach(button => {
+        const letter = button.dataset.key;
+        const colour = keyboardColours[letter];
+
+        button.classList.remove(
+            "green",
+            "yellow",
+            "grey",
+            "future-grey"
+        );
+
+        if (!colour) return;
+
+        if (colour === "future") {
+            button.classList.add("future-grey");
+        } else {
+            button.classList.add(colour);
+        }
+    });
+}
+
+
+/* ADD LETTER */
+
+function addLetter(letter) {
+    if (!gameStarted || finished || isRevealing) return;
+
+    const requiredLength = answers[stage].length;
+
+    if (currentGuess.length < requiredLength) {
+        currentGuess += letter;
+        render();
+    }
+}
+
+
+/* REMOVE LETTER */
+
+function removeLetter() {
+    if (
+        !gameStarted ||
+        finished ||
+        isRevealing ||
+        currentGuess.length === 0
+    ) return;
+
+    currentGuess = currentGuess.slice(0, -1);
+    render();
+}
+
+
+/* HANDLE INPUT */
+
+function handleKey(key) {
+    if (!gameStarted || finished || isRevealing) return;
+
+    if (key === "ENTER") {
+        submitGuess();
+    } else if (key === "BACKSPACE") {
+        removeLetter();
+    } else if (/^[A-Z]$/.test(key)) {
+        addLetter(key);
+    }
+}
+
+
+/* SUBMIT GUESS */
+
+async function submitGuess() {
+    if (!gameStarted || finished || isRevealing) return;
+
+    const guess = currentGuess;
+    const currentAnswer = answers[stage];
+    const nextAnswer = answers[stage + 1] || currentAnswer;
+
+    if (guess.length !== currentAnswer.length) {
+        message.textContent =
+            `Enter ${currentAnswer.length} letters to submit.`;
+        return;
+    }
+
+    isRevealing = true;
+
+    const validWord = await isValidWord(guess);
+
+    if (validWord === null) {
+        isRevealing = false;
+        message.textContent = "Unable to check word. Please try again.";
+        return;
+    }
+
+    if (validWord === false) {
+        isRevealing = false;
+        message.textContent = "Invalid word. Try again.";
+        shakeRow();
+        return;
+    }
+
+    const feedback = guess === currentAnswer
+        ? Array(guess.length).fill("green")
+        : getFeedback(guess, nextAnswer, stage);
+
+    const futureFeedback = getFutureFeedback(
+        guess,
+        feedback,
+        stage
+    );
+
+    const attempt = {
+        word: guess,
+        feedback: feedback,
+        future: futureFeedback
+    };
+
+    attempts[stage].push(attempt);
+    currentGuess = "";
+
+    const submittedRowIndex = stage < 3
+        ? stage
+        : 3 + attempts[3].length - 1;
+
+    render(submittedRowIndex);
+
+    const submittedRow = boards.children[submittedRowIndex];
+
+    await animateRow(submittedRow);
+
+    updateKeyboard(guess, attempt);
+
+    isRevealing = false;
+
+    if (guess === currentAnswer) {
+        finishGame(true);
+        return;
+    }
+
+    const maxAttempts = stage === 3 ? 3 : 1;
+
+    if (attempts[stage].length >= maxAttempts) {
+        if (stage === 3) {
+            finishGame(false);
+            return;
+        }
+
+        stage++;
+
+        message.textContent =
+            `The word has expanded to ${answers[stage].length} letters.`;
+    } else {
+        message.textContent = "Not quite. Try again.";
+    }
+
+    render();
+}
+
+
+/* FINISH GAME */
+
+function finishGame(won) {
+    finished = true;
+    render();
+
+    const result = document.getElementById("result");
+    const title = document.getElementById("resultTitle");
+    const text = document.getElementById("resultText");
+    const attemptCount = document.getElementById("attemptCount");
+    const shareGrid = document.getElementById("shareGrid");
+
+    const resultPuzzleTitle = document.getElementById("resultPuzzleTitle");
+
+    resultPuzzleTitle.textContent =
+        `EXPANDLE #${puzzleDateKey.replaceAll("/", "")}`;
+
+    result.style.display = "flex";
+
+    keyboard.querySelectorAll("button").forEach(button => {
+        button.disabled = true;
+    });
+
+    const totalAttempts = attempts.reduce(
+        (total, stageAttempts) => total + stageAttempts.length,
+        0
+    );
+
+    if (won) {
+        title.textContent = "Well done!";
+        text.textContent = "You successfully expanded the word!";
+        attemptCount.textContent =
+            `You expanded in ${totalAttempts} ${totalAttempts === 1 ? "attempt" : "attempts"}.`;
+    } else {
+        title.textContent = "Game over!";
+        text.textContent = "The words kept expanding from your reach.";
+        attemptCount.textContent = "";
+    }
+
+    /* BUILD ANSWER GRID */
+
+    shareGrid.innerHTML = "";
+
+    const resultRows = [
+        attempts[0][0],
+        attempts[1][0],
+        attempts[2][0],
+        attempts[3][0],
+        attempts[3][1],
+        attempts[3][2]
+    ];
+
+    const rowLengths = [3, 4, 5, 6, 6, 6];
+
+    const answerRows = [
+        answers[0],
+        answers[1],
+        answers[2],
+        answers[3],
+        answers[3],
+        answers[3]
+    ];
+
+    answerRows.forEach((answer, rowIndex) => {
+        const row = document.createElement("div");
+        row.className = `share-row row-${rowIndex + 1}`;
+
+        const attempt = resultRows[rowIndex];
+
+        for (let i = 0; i < rowLengths[rowIndex]; i++) {
+            const tile = document.createElement("div");
+            tile.className = "share-tile";
+
+            tile.textContent = answer[i];
+
+            if (attempt) {
+                const colour = getDisplayStatus(attempt, i);
+                tile.classList.add(colour);
+            } else {
+                tile.classList.add("grey");
+            }
+
+            row.appendChild(tile);
+        }
+
+        shareGrid.appendChild(row);
+    });
+
+    message.textContent = won
+        ? "Puzzle completed!"
+        : "The word expanded beyond your reach.";
+}
+
+
+/* ON-SCREEN KEYBOARD */
+
+keyboard.querySelectorAll(".key").forEach(button => {
+    button.addEventListener("click", function() {
+        handleKey(button.dataset.key);
+    });
+});
+
+
+/* PHYSICAL KEYBOARD */
+
+document.addEventListener("keydown", function(event) {
+    if (!gameStarted || finished || isRevealing) return;
+
+    if (event.key === "Enter") {
+        event.preventDefault();
+        submitGuess();
+    } else if (event.key === "Backspace") {
+        event.preventDefault();
+        removeLetter();
+    } else if (/^[a-zA-Z]$/.test(event.key)) {
+        event.preventDefault();
+        addLetter(event.key.toUpperCase());
+    }
+});
+
+
+/* SHARE SCORE */
+
+async function shareScore() {
+    const totalAttempts = attempts.reduce(
+        (total, stageAttempts) => total + stageAttempts.length,
+        0
+    );
+
+    const resultRows = [
+        attempts[0][0],
+        attempts[1][0],
+        attempts[2][0],
+        attempts[3][0],
+        attempts[3][1],
+        attempts[3][2]
+    ];
+
+    const rowLengths = [3, 4, 5, 6, 6, 6];
+
+    const colourSymbols = {
+        green: "🟩",
+        yellow: "🟨",
+        grey: "⬛",
+        "future-grey": "◩"
+    };
+
+    let sharedGrid = "";
+
+    resultRows.forEach((attempt, rowIndex) => {
+        let row = "";
+
+        for (let i = 0; i < rowLengths[rowIndex]; i++) {
+            const colour = attempt
+                ? getDisplayStatus(attempt, i)
+                : "grey";
+
+            row += colourSymbols[colour];
+        }
+
+        sharedGrid += row + "\n";
+    });
+
+    const shareText =
+        `EXPANDLE #${puzzleDateKey.replaceAll("/", "")}\n` +
+        `${totalAttempts}/6\n` +
+        sharedGrid;
+
+    if (!navigator.share) {
+        message.textContent =
+            "Sharing is unavailable in this browser. Open Expandle using HTTPS to share.";
+
+        return;
+    }
+
+    try {
+        await navigator.share({
+            title: "My Expandle Score",
+            text: shareText
+        });
+
+    } catch (error) {
+        if (error.name === "AbortError") {
+            return;
+        }
+
+        console.error("Sharing failed:", error);
+
+        message.textContent = "Unable to open the sharing menu.";
+    }
+}
+
+
+/* ADMIRE COMPLETED PUZZLE */
+
+function admirePuzzle() {
+    document.getElementById("result").style.display = "none";
+}
+
+
+/* PREVENT ACCIDENTAL DOUBLE-TAP ZOOM ON BUTTONS */
+
+document.addEventListener("dblclick", function(event) {
+    if (event.target.closest("button")) {
+        event.preventDefault();
+    }
+});
+
+
+/* INITIALISE */
+
+render();
+loadDailyPuzzle();
+
+</script>
+
+</body>
+</html>
